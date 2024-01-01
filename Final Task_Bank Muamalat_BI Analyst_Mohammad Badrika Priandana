@@ -1,0 +1,24 @@
+SELECT 
+  Date as order_date,
+  CASE p.Category
+    WHEN 1 THEN 'Blueprints'
+    WHEN 2 THEN 'Drone Kits'
+    WHEN 3 THEN 'Drones'
+    WHEN 4 THEN 'eBooks'
+    WHEN 5 THEN 'Robot Kits'
+    WHEN 6 THEN 'Robots'
+    WHEN 7 THEN 'Training Videos'
+    ELSE 'Unknown Category'
+  END as category_name,
+  p.ProdName as product_name,
+  p.Price as product_price,
+  o.Quantity as order_qty,
+  o.Quantity * p.Price as total_sales,
+  c.CustomerEmail as cust_email,
+  c.CustomerCity as cust_city
+FROM 
+  `Rakamin.Orders_` as o
+JOIN 
+  `Rakamin.Products_` as p ON o.ProdNumber = p.ProdNumber
+JOIN 
+  `tugas-5-409806.Rakamin.Customers_` as c ON o.CustomerID = c.CustomerID;
