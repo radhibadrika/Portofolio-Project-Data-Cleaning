@@ -1,0 +1,48 @@
+EXPORT DATA OPTIONS(
+  uri='gs://kimia_farma/kimiafarma_final*.csv',
+  format='CSV',
+  overwrite=true,
+  header=true
+) AS
+SELECT 
+t.transaction_id, t.branch_id,t.date, t.customer_name,t.discount_percentage,
+c.branch_name, c.kota, c.provinsi, c.rating AS rating_cabang, 
+p.product_id, p.product_name, p.price as actual_price, 
+FORMAT ('%.0f%%',
+CASE
+  WHEN p.price <= 50000 THEN 0.10 
+  WHEN p.price <= 100000 THEN 0.15 
+  WHEN p.price <= 300000 THEN 0.2
+  WHEN p.price <= 500000 THEN 0.25
+ELSE 0.30
+END*100) AS persentase_gross_laba,
+CAST(p.price - (p.price * t.discount_percentage) AS INT64) AS nett_sales,
+  CAST((p.price - (p.price * t.discount_percentage)) * 
+    CASE
+      WHEN p.price <= 50000 THEN 0.10 
+      WHEN p.price <= 100000 THEN 0.15 
+      WHEN p.price <= 300000 THEN 0.20
+      WHEN p.price <= 500000 THEN 0.25
+      ELSE 0.30
+    END AS INT64) AS laba,
+  CAST((p.price - (p.price * t.discount_percentage)) - 
+    CAST((p.price - (p.price * t.discount_percentage)) * 
+      CASE
+        WHEN p.price <= 50000 THEN 0.10 
+        WHEN p.price <= 100000 THEN 0.15 
+        WHEN p.price <= 300000 THEN 0.20
+        WHEN p.price <= 500000 THEN 0.25
+        ELSE 0.30
+      END AS INT64) AS INT64) AS nett_profit,
+t.rating AS rating_transaksi
+
+FROM `KimiaFarmaDataset.final_transaction` AS t
+JOIN `KimiaFarmaDataset.kantor_cabang` AS c 
+  ON t.branch_id = c.branch_id
+JOIN `KimiaFarmaDataset.Product` as p 
+  ON t.product_id = p.product_id
+
+
+
+
+ORDER BY t.date ASC
